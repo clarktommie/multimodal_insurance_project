@@ -1,0 +1,17 @@
+[project]
+name = "multimodal-insurance-project"
+version = "0.1.0"
+description = "A multimodal ML project combining tabular, text, and image data to model insurance risk and premium prediction."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "modal>=1.1.4",
+    "pandas>=2.3.3",
+    "scikit-learn>=1.7.2",
+    "streamlit>=1.50.0",
+    "supabase>=2.20.0",
+    "torch>=2.8.0",
+    "torchvision>=0.23.0",
+    "transformers>=4.56.2",
+]
+
