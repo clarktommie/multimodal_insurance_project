@@ -1,0 +1,6 @@
+tabular + text for used cars dataset :
+https://www.kaggle.com/datasets/ananaymital/us-used-cars-dataset
+
+images for standford cars dataset 
+
+
