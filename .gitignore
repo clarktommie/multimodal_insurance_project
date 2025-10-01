@@ -1,4 +1,6 @@
-# Python-generated files
+# -------------------------
+# Python build / cache
+# -------------------------
 __pycache__/
 *.py[oc]
 build/
@@ -6,5 +8,59 @@ dist/
 wheels/
 *.egg-info
 
+# -------------------------
 # Virtual environments
-.venv
+# -------------------------
+.venv/
+
+# -------------------------
+# uv build artifacts
+# -------------------------
+*.lock
+uv.lock
+
+# -------------------------
+# Jupyter
+# -------------------------
+.ipynb_checkpoints/
+*.ipynb_save
+
+# -------------------------
+# Environment / Secrets
+# -------------------------
+.env
+*.env
+
+# -------------------------
+# Data (large or private files)
+# -------------------------
+data/
+!data/samples/
+!data/samples/*.csv   # keep only demo CSVs
+
+# -------------------------
+# Reports / Figures
+# -------------------------
+reports/figures/*
+
+# -------------------------
+# Modal volumes / caches
+# -------------------------
+modal_volumes/
+modal_cache/
+
+# -------------------------
+# Streamlit / Local app logs
+# -------------------------
+streamlit/logs/
+streamlit/staticfiles/
+
+# -------------------------
+# OS / Editor cruft
+# -------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
