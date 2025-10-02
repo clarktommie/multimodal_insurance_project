@@ -64,3 +64,5 @@ Thumbs.db
 *.swo
 .vscode/
 .idea/
+models/rf_model.pkl
+notebooks/used_cars_encoded.csv
