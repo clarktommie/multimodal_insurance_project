@@ -168,15 +168,15 @@ if __name__ == "__main__":
     new_car.update({
         "make_name": "Toyota",
         "model_name": "Camry",
-        "year": 2018,
-        "mileage": 62000,
+        "year": 2025,
+        "mileage": 30000,
         "owner_count": 2,   # ✅ overrides the default
         "daysonmarket": 18,
-        "fuel_type": "Hybrid",
+        "fuel_type": "GASOLINE",
         "transmission_display": "Automatic",
-        "trim_name": "SE Hybrid",
-        "city": "Raleigh",
-        "listed_year": 2023,
+        "trim_name": "XLE",
+        "city": "Charlotte",
+        "listed_year": 2025,
         "listed_month": 7,
         "transmission": "Automatic",
         "wheel_system": "FWD",
@@ -203,10 +203,10 @@ if __name__ == "__main__":
     # -------------------------------
     # One-hot + numeric
     # -------------------------------
-    print("DEBUG: num_cols list from preprocessed.pkl")
-    print(num_cols)
-    print("\nDEBUG: sample[num_cols] values (first row):")
-    print(sample[num_cols].iloc[0].to_dict())
+    # print("DEBUG: num_cols list from preprocessed.pkl")
+    # print(num_cols)
+    # print("\nDEBUG: sample[num_cols] values (first row):")
+    # print(sample[num_cols].iloc[0].to_dict())
 
     onehot_input = onehot_enc.transform(sample[onehot_cols])  # numpy array
 
@@ -222,17 +222,17 @@ if __name__ == "__main__":
     other_input = np.hstack([num_input, onehot_input])
     other_input = torch.tensor(other_input, dtype=torch.float32)
 
-    print("DEBUG (PREDICT):")
-    print("num_input shape:", num_input.shape)
-    print("onehot_input shape:", onehot_input.shape)
-    print("other_input shape:", other_input.shape)
+    # print("DEBUG (PREDICT):")
+    # print("num_input shape:", num_input.shape)
+    # print("onehot_input shape:", onehot_input.shape)
+    # print("other_input shape:", other_input.shape)
 
-    print("Scaled num_input (first row):", num_input[0][:10])  # first 10 numeric features
-    print("Onehot nonzero count:", np.count_nonzero(onehot_input))
-    print("Embed indices:", embed_input.tolist())
+    # print("Scaled num_input (first row):", num_input[0][:10])  # first 10 numeric features
+    # print("Onehot nonzero count:", np.count_nonzero(onehot_input))
+    # print("Embed indices:", embed_input.tolist())
 
-    print("make_name classes:", encoders["make_name"].classes_[:20])  # first 20
-    print("model_name classes:", encoders["model_name"].classes_[:20])
+    # print("make_name classes:", encoders["make_name"].classes_[:20])  # first 20
+    # print("model_name classes:", encoders["model_name"].classes_[:20])
 
 
 
