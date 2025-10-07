@@ -1,4 +1,8 @@
-# predict.py
+"""Prediction script for used-car price estimation model.
+
+Loads the trained deep learning model and preprocessing pipeline,
+takes sample input, and outputs the predicted price and log-price.
+"""
 import os
 import joblib
 import torch
@@ -6,8 +10,7 @@ import numpy as np
 import pandas as pd
 
 # ✅ Only import the model class
-from train_embedding import CarModel  
-
+from train_embedding import CarModel
 # -------------------------------
 # Paths
 # -------------------------------
@@ -79,8 +82,9 @@ if __name__ == "__main__":
     # -------------------------------
     # Default template
     # -------------------------------
-    # 
-    default_car = {
+    #
+    #
+    default_car={
         "make_name": "Unknown",
         "model_name": "Unknown",
         "year": 2020,
@@ -99,7 +103,6 @@ if __name__ == "__main__":
         "width": 72,
         "wheelbase": 111,
         "maximum_seating": 5,
-        "theft_title": 0,
         "salvage": 0,
         "frame_damaged": 0,
         "has_accidents": 0,
