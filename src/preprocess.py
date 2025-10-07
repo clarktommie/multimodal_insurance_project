@@ -7,6 +7,8 @@ from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
 def preprocess_data(data_path, out_path):
     df = pd.read_csv(data_path)
 
+       
+
     # ✅ Force city to stay categorical
     if "city" in df.columns:
         df["city"] = df["city"].astype(str)
@@ -61,41 +63,7 @@ def preprocess_data(data_path, out_path):
     print("embed_cols:", embed_cols)
     print("onehot_cols (first 15):", onehot_cols[:15], f"... total={len(onehot_cols)}")
     print("num_cols (first 15):", num_cols[:15], f"... total={len(num_cols)}")
-
-
-
-   
-
-
-
-    # # -------------------------------
-    # # Define column groups
-    # # -------------------------------
-    # embed_cols = ["make_name", "model_name"]
-    # onehot_cols = ['city', 'fleet', 'frame_damaged', 'fuel_type', 'has_accidents', 'isCab', 
-    #                'salvage', 'transmission', 'trim_name', 'wheel_system', 
-    #                'wheel_system_display']
     
-    # num_cols = ['daysonmarket', 'franchise_dealer', 'is_new',
-    #             'mileage', 'owner_count', 'price', 'savings_amount', 'sp_id', 'year', 
-    #             'body_type_Convertible', 'body_type_Coupe', 'body_type_Hatchback', 'body_type_Minivan', 
-    #             'body_type_Pickup Truck', 'body_type_SUV / Crossover', 'body_type_Sedan', 
-    #             'body_type_Unknown', 'body_type_Van', 'body_type_Wagon', 'engine_type_H4', 'engine_type_H4 Hybrid', 
-    #             'engine_type_H6', 'engine_type_I2', 'engine_type_I3', 'engine_type_I4', 'engine_type_I4 Diesel', 
-    #             'engine_type_I4 Flex Fuel Vehicle', 'engine_type_I4 Hybrid', 'engine_type_I5', 
-    #             'engine_type_I5 Biodiesel', 'engine_type_I6', 'engine_type_I6 Diesel', 'engine_type_R2', 
-    #             'engine_type_Unknown', 'engine_type_V10', 'engine_type_V12', 'engine_type_V6', 'engine_type_V6 Biodiesel', 
-    #             'engine_type_V6 Diesel', 'engine_type_V6 Flex Fuel Vehicle', 'engine_type_V6 Hybrid', 'engine_type_V8', 
-    #             'engine_type_V8 Biodiesel', 'engine_type_V8 Compressed Natural Gas', 'engine_type_V8 Diesel', 
-    #             'engine_type_V8 Flex Fuel Vehicle', 'engine_type_V8 Hybrid', 'engine_type_W12', 'engine_type_W12 Flex Fuel Vehicle', 
-    #             'theft_title_False', 'theft_title_True', 'theft_title_Unknown'] # , "latitude", "longitude"
-
-    # -------------------------------
-    # Encode embedding columns
-    # -------------------------------
- 
-
-
     # -------------------------------
     # Encode embedding columns (make/model)
     # -------------------------------

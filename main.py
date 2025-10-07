@@ -8,15 +8,13 @@ if __name__ == "__main__":
     # Paths
     DATA_PATH = os.path.join(PROJECT_ROOT, "data", "used_cars", "used_cars_data_clean.csv")
     MODEL_DIR = os.path.join(PROJECT_ROOT, "models")
-    MODEL_PATH = os.path.join(MODEL_DIR, "rf_model.pkl")
+    PREPROC_PATH = os.path.join(MODEL_DIR, "preprocessed.pkl")
 
     # Ensure models directory exists
     os.makedirs(MODEL_DIR, exist_ok=True)
 
-    # Train model
-    print("🚀 Training model...")
-    model = train_model(DATA_PATH, model_out=MODEL_PATH)
+    # Run preprocessing + save encoders/data splits
+    print("🚀 Preparing data + encoders for embedding model...")
+    data_dict = train_model(DATA_PATH, model_out=PREPROC_PATH)
 
-    print(f"✅ Training complete. Model saved to: {MODEL_PATH}")
-
-
+    print(f"✅ Preprocessing complete. Saved to: {PREPROC_PATH}")

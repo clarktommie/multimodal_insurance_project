@@ -85,16 +85,16 @@ if __name__ == "__main__":
         "model_name": "Unknown",
         "year": 2020,
         "mileage": 0,
-        "owner_count": 1,   # only here once
+        "owner_count": 0,   # only here once
         "daysonmarket": 0,
         "fuel_type": "Gasoline",
         "transmission_display": "Automatic",
         "trim_name": "Base",
         "city": "Unknown",
         "engine_type": "I4",
-        "engine_cylinders": "4",
+        "engine_cylinders": "6",
         "wheel_system_display": "FWD",
-        "exterior_color": "Silver",
+        "exterior_color": "Black",
         "length": 192,
         "width": 72,
         "wheelbase": 111,
@@ -109,7 +109,7 @@ if __name__ == "__main__":
         "listed_year": 2023,
         "listed_month": 5,
         "franchise_dealer": 1, 
-        "is_new": 0, 
+        "is_new": 1, 
         "savings_amount": 0,
         "sp_id": 0, 
 
@@ -119,8 +119,8 @@ if __name__ == "__main__":
         "body_type_Hatchback": 0,
         "body_type_Minivan": 0,
         "body_type_Pickup Truck": 0,
-        "body_type_SUV / Crossover": 0,
-        "body_type_Sedan": 1,
+        "body_type_SUV / Crossover": 1,
+        "body_type_Sedan": 0,
         "body_type_Unknown": 0,
         "body_type_Van": 0,
         "body_type_Wagon": 0,
@@ -131,10 +131,10 @@ if __name__ == "__main__":
         "engine_type_H6": 0,
         "engine_type_I2": 0,
         "engine_type_I3": 0,
-        "engine_type_I4": 0,
+        "engine_type_I4": 1,
         "engine_type_I4 Diesel": 0,
         "engine_type_I4 Flex Fuel Vehicle": 0,
-        "engine_type_I4 Hybrid": 1,   # ✅ Camry Hybrid
+        "engine_type_I4 Hybrid": 0,   # ✅ Camry Hybrid
         "engine_type_I5": 0,
         "engine_type_I5 Biodiesel": 0,
         "engine_type_I6": 0,
@@ -166,15 +166,15 @@ if __name__ == "__main__":
 
     new_car = default_car.copy()
     new_car.update({
-        "make_name": "Toyota",
-        "model_name": "Camry",
+        "make_name": "Land Rover",
+        "model_name": "Discovery Sport",
         "year": 2025,
-        "mileage": 30000,
-        "owner_count": 2,   # ✅ overrides the default
+        "mileage": 0,
+        "owner_count": 0,   # ✅ overrides the default
         "daysonmarket": 18,
         "fuel_type": "GASOLINE",
         "transmission_display": "Automatic",
-        "trim_name": "XLE",
+        "trim_name": "S AWD",
         "city": "Charlotte",
         "listed_year": 2025,
         "listed_month": 7,

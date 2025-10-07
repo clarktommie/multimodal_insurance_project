@@ -9,9 +9,6 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
 import pandas as pd
-# add scaler
-from sklearn.preprocessing import StandardScaler
-
 
 # -------------------------------
 # Dataset Class
@@ -27,6 +24,7 @@ class CarDataset(Dataset):
 
     def __getitem__(self, idx): 
         return self.embed_data[idx], self.other_data[idx], self.y[idx]
+
 
 # -------------------------------
 # Model
@@ -46,6 +44,7 @@ class CarModel(nn.Module):
         x = torch.relu(self.fc2(x))
         return self.fc3(x)
 
+
 # -------------------------------
 # Training Script
 # -------------------------------
@@ -62,9 +61,10 @@ if __name__ == "__main__":
     onehot_cols = preprocessed["onehot_cols"]
     num_cols = preprocessed["num_cols"]
 
-    # Encoders
+    # Encoders and transformers
     encoders = preprocessed["encoders"]
     onehot_enc = preprocessed["onehot_enc"]
+    scaler = preprocessed["scaler"]
 
     # -------------------------------
     # Load raw dataset
@@ -72,63 +72,75 @@ if __name__ == "__main__":
     DATA_PATH = os.path.join(PROJECT_ROOT, "data", "used_cars", "used_cars_data_clean.csv")
     df = pd.read_csv(DATA_PATH)
 
-    # Target: log(price)
+    # -------------------------------
+    # Clean and normalize columns before transform
+    # -------------------------------
+    for c in embed_cols + onehot_cols:
+        if c in df.columns:
+            df[c] = df[c].astype(str).str.strip().str.lower()
+
+    # Target variable
     y = np.log1p(df["price"].values)
 
-    # --- FIX: clean numeric features BEFORE building arrays ---
-    if "price" in num_cols:
-        num_cols.remove("price")
-
+    # --- Ensure numeric types ---
     for col in num_cols:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
-    # Convert dummy columns (safety)
-    df = df.astype({c: float for c in df.columns if c.startswith("body_type_") 
-                                            or c.startswith("engine_type_") 
-                                            or c.startswith("theft_title_")})
-    scaler = StandardScaler()
+    # Convert dummy columns (body_type_*, engine_type_*, theft_title_*)
+    df = df.astype({
+        c: float for c in df.columns 
+        if c.startswith(("body_type_", "engine_type_", "theft_title_"))
+    })
 
     # -------------------------------
-    # Build inputs
+    # Encode embedding columns safely
     # -------------------------------
+    for col in embed_cols:
+        known_classes = set(encoders[col].classes_)
+        unseen = set(df[col].unique()) - known_classes
+        if unseen:
+            print(f"⚠️ Dropping {len(unseen)} unseen labels in '{col}': {list(unseen)[:10]}...")
+            df = df[df[col].isin(known_classes)]
 
-    # ✅ Encode embedding columns using saved LabelEncoders
+    # Transform using saved encoders
     X_embed = np.column_stack([
-        encoders[col].transform(df[col].astype(str).str.strip().str.lower())
-        for col in embed_cols
+        encoders[col].transform(df[col]) for col in embed_cols
     ]).astype(np.int64)
 
-    # Force all onehot columns to strings to avoid mixed types (float+str)
+    # -------------------------------
+    # One-hot encode smaller categoricals
+    # -------------------------------
     for col in onehot_cols:
         if col in df.columns:
             df[col] = df[col].astype(str)
-
-    # One-hot + numeric
     X_onehot = onehot_enc.transform(df[onehot_cols]).astype(np.float32)
-    X_num = scaler.fit_transform(df[num_cols])  # ✅ fit + transform at training time
 
-    # Save scaler back into preprocessing so predict.py uses the same one
-    preprocessed["scaler"] = scaler
-    joblib.dump(preprocessed, PREP_PATH)
+    # -------------------------------
+    # Scale numeric features (no re-fitting!)
+    # -------------------------------
+    X_num = scaler.transform(df[num_cols]).astype(np.float32)
 
-    # Combine
+    # -------------------------------
+    # Combine numeric + one-hot
+    # -------------------------------
     X_other = np.hstack([X_num, X_onehot]).astype(np.float32)
 
+    # Debug info
     print("DEBUG (TRAIN):")
-    print("X_embed shape:", X_embed.shape, "| dtypes:", X_embed.dtype)
+    print("X_embed shape:", X_embed.shape, "| dtype:", X_embed.dtype)
     print("X_num shape:", X_num.shape)
     print("X_onehot shape:", X_onehot.shape)
     print("X_other shape:", X_other.shape)
 
     # -------------------------------
-    # Split
+    # Train/Validation Split
     # -------------------------------
     X_embed_train, X_embed_val, X_other_train, X_other_val, y_train, y_val = train_test_split(
         X_embed, X_other, y, test_size=0.2, random_state=42
     )
 
-    # Build datasets
+    # Datasets & Loaders
     train_ds = CarDataset(X_embed_train, X_other_train, y_train)
     val_ds = CarDataset(X_embed_val, X_other_val, y_val)
     train_dl = DataLoader(train_ds, batch_size=64, shuffle=True)
@@ -140,12 +152,14 @@ if __name__ == "__main__":
         (len(encoders["model_name"].classes_), 100)
     ]
 
-    # Model
+    # Model setup
     model = CarModel(embed_sizes, X_other.shape[1])
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
+    # -------------------------------
     # Training Loop
+    # -------------------------------
     EPOCHS = 30
     for epoch in range(EPOCHS):
         model.train()
@@ -167,7 +181,6 @@ if __name__ == "__main__":
                 y_all.append(yb.numpy())
         val_loss = np.mean(val_losses)
 
-        # R² and Median Prediction (convert back with expm1)
         preds_all = np.vstack(preds_all).flatten()
         y_all = np.vstack(y_all).flatten()
         r2 = r2_score(y_all, preds_all)
@@ -175,11 +188,12 @@ if __name__ == "__main__":
 
         print(f"Epoch {epoch+1}: Val MSE={val_loss:.2f}, R²={r2:.4f}, Median Pred=${median_pred:,.2f}")
 
+    # -------------------------------
     # Save Model
+    # -------------------------------
     MODEL_PATH = os.path.join(MODEL_DIR, "deep_model.pth")
     torch.save(model.state_dict(), MODEL_PATH)
 
-    # ✅ Save input_size for predict.py
     preprocessed["input_size"] = X_other.shape[1]
     joblib.dump(preprocessed, PREP_PATH)
 
