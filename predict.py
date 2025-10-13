@@ -172,7 +172,7 @@ if __name__ == "__main__":
         "make_name": "Land Rover",
         "model_name": "Discovery Sport",
         "year": 2025,
-        "mileage": 0,
+        "mileage": 10000,
         "owner_count": 0,   # ✅ overrides the default
         "daysonmarket": 18,
         "fuel_type": "GASOLINE",
