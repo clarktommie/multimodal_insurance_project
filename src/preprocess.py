@@ -1,4 +1,4 @@
-from email import encoders
+# from email import encoders
 import os
 import joblib
 import pandas as pd
@@ -80,14 +80,14 @@ def preprocess_data(data_path, out_path):
 
 
 
-        # Force all onehot columns to lowercase trimmed strings (case-insensitive consistency)
-        for col in onehot_cols:
-            if col in df.columns:
-                df[col] = df[col].astype(str).str.strip().str.lower()
+    # Force all onehot columns to lowercase trimmed strings (case-insensitive consistency)
+    for col in onehot_cols:
+        if col in df.columns:
+            df[col] = df[col].astype(str).str.strip().str.lower()
     # -------------------------------
     # One-hot encode smaller categoricals
     # -------------------------------
-    onehot_enc = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
+    onehot_enc = OneHotEncoder(handle_unknown="ignore", sparse_output=True)
     onehot_enc.fit(df[onehot_cols])
     onehot_feature_names = onehot_enc.get_feature_names_out(onehot_cols)
 

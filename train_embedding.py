@@ -16,14 +16,16 @@ import pandas as pd
 class CarDataset(Dataset):
     def __init__(self, embed_data, other_data, y):
         self.embed_data = torch.tensor(embed_data, dtype=torch.long)
-        self.other_data = torch.tensor(other_data, dtype=torch.float32)
+        self.other_data = other_data  # keep sparse
         self.y = torch.tensor(y, dtype=torch.float32).view(-1, 1)
 
-    def __len__(self): 
+    def __len__(self):
         return len(self.y)
 
-    def __getitem__(self, idx): 
-        return self.embed_data[idx], self.other_data[idx], self.y[idx]
+    def __getitem__(self, idx):
+        # convert only the single row to dense here
+        other_dense = torch.tensor(self.other_data[idx].toarray(), dtype=torch.float32).squeeze(0)
+        return self.embed_data[idx], other_dense, self.y[idx]
 
 
 # -------------------------------
@@ -114,30 +116,35 @@ if __name__ == "__main__":
     for col in onehot_cols:
         if col in df.columns:
             df[col] = df[col].astype(str)
-    X_onehot = onehot_enc.transform(df[onehot_cols]).astype(np.float32)
+    onehot_data = onehot_enc.transform(df[onehot_cols])
+    
 
+    # -------------------------------
     # -------------------------------
     # Scale numeric features (no re-fitting!)
     # -------------------------------
     X_num = scaler.transform(df[num_cols]).astype(np.float32)
 
     # -------------------------------
-    # Combine numeric + one-hot
+    # Combine numeric + one-hot (use sparse to save memory)
     # -------------------------------
-    X_other = np.hstack([X_num, X_onehot]).astype(np.float32)
+    from scipy.sparse import hstack
+    X_other_sparse = hstack([onehot_data, X_num])
 
     # Debug info
     print("DEBUG (TRAIN):")
     print("X_embed shape:", X_embed.shape, "| dtype:", X_embed.dtype)
     print("X_num shape:", X_num.shape)
-    print("X_onehot shape:", X_onehot.shape)
-    print("X_other shape:", X_other.shape)
+    print("X_onehot shape:", onehot_data.shape)
+    print("X_other_sparse shape:", X_other_sparse.shape)
 
     # -------------------------------
     # Train/Validation Split
     # -------------------------------
+    from sklearn.model_selection import train_test_split
+
     X_embed_train, X_embed_val, X_other_train, X_other_val, y_train, y_val = train_test_split(
-        X_embed, X_other, y, test_size=0.2, random_state=42
+        X_embed, X_other_sparse, y, test_size=0.2, random_state=42
     )
 
     # Datasets & Loaders
@@ -151,19 +158,22 @@ if __name__ == "__main__":
         (len(encoders["make_name"].classes_), 50),
         (len(encoders["model_name"].classes_), 100)
     ]
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Model setup
-    model = CarModel(embed_sizes, X_other.shape[1])
+    model = CarModel(embed_sizes, X_other_sparse.shape[1]).to(device)
     criterion = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.Adam(model.parameters(), lr=5e-4)
 
     # -------------------------------
     # Training Loop
     # -------------------------------
-    EPOCHS = 30
+    EPOCHS = 3
     for epoch in range(EPOCHS):
         model.train()
         for xb_embed, xb_other, yb in train_dl:
+            xb_embed, xb_other, yb = xb_embed.to(device), xb_other.to(device), yb.to(device)
+
             optimizer.zero_grad()
             preds = model(xb_embed, xb_other)
             loss = criterion(preds, yb)
@@ -175,11 +185,15 @@ if __name__ == "__main__":
         val_losses, preds_all, y_all = [], [], []
         with torch.no_grad():
             for xb_embed, xb_other, yb in val_dl:
+                xb_embed, xb_other, yb = xb_embed.to(device), xb_other.to(device), yb.to(device)
+
                 preds = model(xb_embed, xb_other)
                 val_losses.append(criterion(preds, yb).item())
-                preds_all.append(preds.numpy())
-                y_all.append(yb.numpy())
+                preds_all.append(preds.detach().cpu().numpy())
+                y_all.append(yb.detach().cpu().numpy())
+
         val_loss = np.mean(val_losses)
+
 
         preds_all = np.vstack(preds_all).flatten()
         y_all = np.vstack(y_all).flatten()
@@ -194,8 +208,8 @@ if __name__ == "__main__":
     MODEL_PATH = os.path.join(MODEL_DIR, "deep_model.pth")
     torch.save(model.state_dict(), MODEL_PATH)
 
-    preprocessed["input_size"] = X_other.shape[1]
+    preprocessed["input_size"] = X_other_sparse.shape[1]
     joblib.dump(preprocessed, PREP_PATH)
 
     print(f"✅ Model saved to {MODEL_PATH}")
-    print(f"✅ Preprocessing updated with input_size={X_other.shape[1]}")
+    print(f"✅ Preprocessing updated with input_size={X_other_sparse.shape[1]}")
